@@ -21,7 +21,7 @@ public class Project implements Serializable {
         return tasks;
     }
 
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
+    public void addTask(Task task) {
+        tasks.add(task);
     }
 }

@@ -14,7 +14,6 @@ public class TodoHandler {
 
     private boolean breakFlag = false;
     private int option;
-    //    private List<Task> tasks;
     private List<Project> projects;
     private FileHandler fileHandler;
     private static final String FILE_NAME = "todolist.txt";
@@ -27,13 +26,6 @@ public class TodoHandler {
     public void display() {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         System.out.println(String.format("%50s", "Welcome to Todo List "));
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println(String.format("%45s", "1- Display List"));
-        System.out.println(String.format("%45s", "2- Add New Task"));
-        System.out.println(String.format("%45s", "3- Edit Task"));
-        System.out.println(String.format("%45s", "4- Delete Task"));
-        System.out.println(String.format("%45s", "5- Save & Exit"));
-
         chooseOption();
 
         while (!breakFlag) {
@@ -42,7 +34,7 @@ public class TodoHandler {
                     showList();
                     break;
                 case 2:
-                    checkProject();
+                    confirmProject();
                     break;
                 case 3:
                 case 4:
@@ -55,25 +47,24 @@ public class TodoHandler {
     }
 
 
-    //todo: check project with same name when creating new project
-    private void checkProject() {
+    private void confirmProject() {
         String format = "%-5s %-50s";
         int index = 0;
         if (projects.size() > 0) {
-            System.out.println("Choose Project: ");
+            System.out.println("Choose Existing Project from the list below or Press Enter to Create new Project");
             for (Project project : projects) {
                 index = index + 1;
                 System.out.println(String.format(format, index, project.getName()));
             }
-            int lastOrder = index + 1;
-            System.out.println(String.format(format, lastOrder, "Or Else Create New Project"));
 
-            int selectedOption = scanInt();
-            if (selectedOption != lastOrder) {
-                Task task = addNewTask();
-                projects.get(selectedOption - 1).getTasks().add(task);
-            } else {
+            String selectedOption = scanString();
+            if (selectedOption.isEmpty()) {
                 addNewProject();
+            } else if (Integer.parseInt(selectedOption) <= projects.size()) {
+                Task task = addNewTask();
+                projects.get(Integer.parseInt(selectedOption) - 1).addTask(task);
+            } else {
+                confirmProject();
             }
         } else {
             addNewProject();
@@ -83,11 +74,19 @@ public class TodoHandler {
     private void addNewProject() {
         System.out.println("Enter Project Name");
         String projectName = scanString();
+        if (checkProjectName(projectName)) {
+            System.out.printf("Project with name '%s' already exist. Please choose another name %n", projectName);
+            addNewProject();
+        }
         Project newProject = new Project();
         newProject.setName(projectName);
         Task newTask = addNewTask();
-        newProject.getTasks().add(newTask);
+        newProject.addTask(newTask);
         projects.add(newProject);
+    }
+
+    private boolean checkProjectName(String name) {
+        return projects.stream().anyMatch(project -> project.getName().equals(name));
     }
 
 
@@ -103,7 +102,7 @@ public class TodoHandler {
 
         Task task = new Task();
         task.setDescription(taskDesc);
-        task.setStatus(checkStatus());
+        task.setStatus(Status.OPEN);
         task.setCreatedDate(LocalDate.now());
         task.setDueDate(dueDate);
         chooseOption();
@@ -153,32 +152,38 @@ public class TodoHandler {
 
     private String scanString() {
         Scanner sc = new Scanner(System.in);
-        return sc.nextLine();
+        return sc.nextLine().trim();
     }
 
-    //todo: set status to open when creating new task
-    private Status checkStatus() {
-        System.out.println("Choose Status:");
-        System.out.println("1-" + Status.OPEN);
-        System.out.println("2-" + Status.CLOSED);
-        int statusInput = scanInt();
-        Status status = null;
-        if (statusInput == 1) {
-            status = Status.OPEN;
-        } else if (statusInput == 2) {
-            status = Status.CLOSED;
-        } else {
-            System.out.println("Please select either 1 or 2");
-            checkStatus();
-        }
-        return status;
-    }
+
+//    private Status checkStatus() {
+//        System.out.println("Choose Status:");
+//        System.out.println("1-" + Status.OPEN);
+//        System.out.println("2-" + Status.CLOSED);
+//        int statusInput = scanInt();
+//        Status status = null;
+//        if (statusInput == 1) {
+//            status = Status.OPEN;
+//        } else if (statusInput == 2) {
+//            status = Status.CLOSED;
+//        } else {
+//            System.out.println("Please select either 1 or 2");
+//            checkStatus();
+//        }
+//        return status;
+//    }
 
     private void chooseOption() {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("enter correct option");
+        System.out.println(String.format("%45s", "1- Display List"));
+        System.out.println(String.format("%45s", "2- Add New Task"));
+        System.out.println(String.format("%45s", "3- Edit Task"));
+        System.out.println(String.format("%45s", "4- Delete Task"));
+        System.out.println(String.format("%45s", "5- Save & Exit"));
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("Enter correct option");
         option = scanInt();
-        //todo: remove it and see
+        //todo:
         if (option > 5) chooseOption();
     }
 
