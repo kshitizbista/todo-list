@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 //todo: exit from the current step
 public class TodoHandler {
@@ -27,6 +28,7 @@ public class TodoHandler {
     public void display() {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         System.out.println(String.format("%50s", "Welcome to Todo List "));
+        System.out.printf("You have %s tasks todo and %s tasks are done! %n", getActualStatusNo(Status.OPEN), getActualStatusNo(Status.CLOSED));
         showToplevelMenu();
         chooseOptionFromTopMenu();
 
@@ -148,6 +150,10 @@ public class TodoHandler {
         } else {
             sort();
         }
+    }
+
+    private int getActualStatusNo(Status status) {
+        return tasks.stream().filter(task -> task.getStatus() == status).collect(Collectors.toList()).size();
     }
 
 }
