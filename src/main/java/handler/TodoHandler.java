@@ -48,6 +48,7 @@ public class TodoHandler {
                     break;
                 case 3:
                 case 4:
+                    deleteTask();
                 case 5:
                     fileHandler.writeListToFile(tasks, FILE_NAME);
                     breakFlag = true;
@@ -130,7 +131,14 @@ public class TodoHandler {
     }
 
     private void deleteTask() {
-
+        System.out.println("Enter the Task No to remove:");
+        int taskNo = scanInt();
+        try {
+            tasks.remove(taskNo);
+        } catch (IndexOutOfBoundsException ex) {
+            System.out.println("Cannot delete task. Index out of range: " + taskNo);
+        }
+        pickOptionFromTopMenu();
     }
 
     private void showList() {
