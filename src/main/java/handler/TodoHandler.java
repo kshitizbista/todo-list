@@ -29,8 +29,14 @@ public class TodoHandler {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         System.out.println("Welcome to Todo List ");
         showStatus();
-        showToplevelMenu();
-        chooseOptionFromTopMenu();
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("(1) Show Task List (by date or project)");
+        System.out.println("(2) Add New Task");
+        System.out.println("(3) Edit Task (update, mark as done)");
+        System.out.println("(4) Remove Task");
+        System.out.println("(5) Save & Exit");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+        pickOptionFromTopMenu();
 
         while (!breakFlag) {
             switch (option) {
@@ -50,23 +56,60 @@ public class TodoHandler {
         }
     }
 
-    //todo: check duedate to currentdate
-    private Task addTask() {
-        System.out.println("Enter Project Name:");
-        String project = scanString();
+    private void addTask() {
 
+        String project = getProject();
         System.out.println("Enter Task Title:");
-        String taskDesc = scanString();
+        String title = scanString();
+        LocalDate deuDate = getDate();
 
         Task task = new Task();
         task.setProject(project);
-        task.setTitle(taskDesc);
+        task.setTitle(title);
         task.setStatus(Status.OPEN);
         task.setCreatedDate(LocalDate.now());
-        task.setDueDate(getDate());
-        chooseOptionFromTopMenu();
+        task.setDueDate(deuDate);
+
         tasks.add(task);
-        return task;
+    }
+
+    private String getProject() {
+        List<String> project = tasks.stream().map(task -> task.getProject()).distinct().collect(Collectors.toList());
+
+        System.out.println("Choose Project from the list below or press enter to create new project");
+        int index = 0;
+        for (String name : project) {
+            index = index + 1;
+            System.out.printf("%s. %s %n", index, name);
+        }
+        String selectedProject = scanString();
+        String projectName = null;
+        if (selectedProject.isEmpty()) {
+            System.out.println("Enter Project Name:");
+            projectName = scanString();
+            // loop until project with new name is entered
+            while (true) {
+                boolean projectAlreadyExist = false;
+                for (String name : project) {
+                    if (name.equalsIgnoreCase(projectName)) {
+                        projectAlreadyExist = true;
+                        break;
+                    }
+                }
+                if (projectAlreadyExist) {
+                    System.out.printf("Project with Name: '%s' already exist. Enter another name %n", projectName);
+                    projectName = scanString();
+                } else {
+                    break;
+                }
+            }
+        } else if (Integer.parseInt(selectedProject) <= project.size()) {
+            projectName = project.get(Integer.parseInt(selectedProject) - 1);
+        } else {
+            //recursive
+            getProject();
+        }
+        return projectName;
     }
 
     private LocalDate getDate() {
@@ -111,7 +154,7 @@ public class TodoHandler {
         } else {
             System.out.println("There are no tasks in Todo List");
         }
-        chooseOptionFromTopMenu();
+        pickOptionFromTopMenu();
     }
 
     private int scanInt() {
@@ -124,21 +167,14 @@ public class TodoHandler {
         return sc.nextLine().trim();
     }
 
-    private void chooseOptionFromTopMenu() {
+    private void pickOptionFromTopMenu() {
         System.out.println("Pick an option:");
         option = scanInt();
         //recursive
-        if (option > 5) chooseOptionFromTopMenu();
-    }
-
-    private void showToplevelMenu() {
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("(1) Show Task List (by date or project)");
-        System.out.println("(2) Add New Task");
-        System.out.println("(3) Edit Task (update, mark as done)");
-        System.out.println("(4) Remove Task");
-        System.out.println("(5) Save & Exit");
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+        if (option > 5) {
+            System.out.println("Please choose option between 1 and 5 from the menu");
+            pickOptionFromTopMenu();
+        }
     }
 
     private int getNumberOfSelectedStatus(Status status) {
