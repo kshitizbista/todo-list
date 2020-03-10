@@ -5,17 +5,18 @@ import java.time.LocalDate;
 
 public class Task implements Serializable {
 
-    private String description;
+    private String title;
     private LocalDate createdDate;
     private LocalDate dueDate;
     private Status status;
+    private String project;
 
-    public String getDescription() {
-        return description;
+    public String getTitle() {
+        return title;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public LocalDate getCreatedDate() {
@@ -40,5 +41,13 @@ public class Task implements Serializable {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
     }
 }
