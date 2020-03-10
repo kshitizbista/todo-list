@@ -27,8 +27,8 @@ public class TodoHandler {
 
     public void display() {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println(String.format("%50s", "Welcome to Todo List "));
-        System.out.printf("You have %s tasks todo and %s tasks are done! %n", getActualStatusNo(Status.OPEN), getActualStatusNo(Status.CLOSED));
+        System.out.println("Welcome to Todo List ");
+        showStatus();
         showToplevelMenu();
         chooseOptionFromTopMenu();
 
@@ -58,20 +58,28 @@ public class TodoHandler {
         System.out.println("Enter Task Title:");
         String taskDesc = scanString();
 
-        System.out.println("Enter Due Date(yyyy-MM-dd):");
-        String dateInput = scanString();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate dueDate = LocalDate.parse(dateInput, formatter);
-
         Task task = new Task();
         task.setProject(project);
         task.setTitle(taskDesc);
         task.setStatus(Status.OPEN);
         task.setCreatedDate(LocalDate.now());
-        task.setDueDate(dueDate);
+        task.setDueDate(getDate());
         chooseOptionFromTopMenu();
         tasks.add(task);
         return task;
+    }
+
+    private LocalDate getDate() {
+        System.out.println("Enter Due Date(yyyy-MM-dd):");
+        String dateInput = scanString();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate dueDate = LocalDate.parse(dateInput, formatter);
+        if (dueDate.compareTo(LocalDate.now()) < 0) {
+            System.out.println("The due date cannot be less than today's date");
+            //recursive
+            getDate();
+        }
+        return dueDate;
     }
 
     private void updateTask() {
@@ -82,10 +90,6 @@ public class TodoHandler {
 
     }
 
-    private void deleteProject() {
-    }
-
-    //todo: show x task is done y task is remaining, sorting
     private void showList() {
         if (tasks.size() > 0) {
             sort();
@@ -105,7 +109,7 @@ public class TodoHandler {
             }
             System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         } else {
-            System.out.println("{ --- Todo List is Empty --- }");
+            System.out.println("There are no tasks in Todo List");
         }
         chooseOptionFromTopMenu();
     }
@@ -121,20 +125,32 @@ public class TodoHandler {
     }
 
     private void chooseOptionFromTopMenu() {
-        System.out.println("Enter Correct Option From Top Menu");
+        System.out.println("Pick an option:");
         option = scanInt();
-        //todo:
+        //recursive
         if (option > 5) chooseOptionFromTopMenu();
     }
 
     private void showToplevelMenu() {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println(String.format("%45s", "1- Display List"));
-        System.out.println(String.format("%45s", "2- Add New Task"));
-        System.out.println(String.format("%45s", "3- Edit Task"));
-        System.out.println(String.format("%45s", "4- Delete Task"));
-        System.out.println(String.format("%45s", "5- Save & Exit"));
+        System.out.println("(1) Show Task List (by date or project)");
+        System.out.println("(2) Add New Task");
+        System.out.println("(3) Edit Task (update, mark as done)");
+        System.out.println("(4) Remove Task");
+        System.out.println("(5) Save & Exit");
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+    }
+
+    private int getNumberOfSelectedStatus(Status status) {
+        return tasks.stream().filter(task -> task.getStatus() == status).collect(Collectors.toList()).size();
+    }
+
+    private void showStatus() {
+        if (tasks.size() > 0) {
+            int openStatus = getNumberOfSelectedStatus(Status.OPEN);
+            int closedStatus = getNumberOfSelectedStatus(Status.CLOSED);
+            System.out.printf("You have %s tasks todo and %s tasks are done! %n", openStatus, closedStatus);
+        }
     }
 
     private void sort() {
@@ -148,12 +164,8 @@ public class TodoHandler {
         } else if (sortOption == 2) {
             Collections.sort(tasks, Comparator.comparing(Task::getDueDate));
         } else {
+            //recursive
             sort();
         }
     }
-
-    private int getActualStatusNo(Status status) {
-        return tasks.stream().filter(task -> task.getStatus() == status).collect(Collectors.toList()).size();
-    }
-
 }
