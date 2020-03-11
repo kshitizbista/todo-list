@@ -41,6 +41,7 @@ public class TodoHandler {
             switch (option) {
                 case 1:
                     showList();
+                    showStatus();
                     pickOptionFromTopMenu();
                     break;
                 case 2:
@@ -248,7 +249,7 @@ public class TodoHandler {
         if (tasks.size() > 0) {
             int openStatus = getNumberOfSelectedStatus(Status.OPEN);
             int closedStatus = getNumberOfSelectedStatus(Status.CLOSED);
-            System.out.printf("You have %s tasks todo and %s tasks are done! %n", openStatus, closedStatus);
+            System.out.printf("No. of Tasks To Do: %s , No. of Tasks Done: %s %n", openStatus, closedStatus);
         }
     }
 
