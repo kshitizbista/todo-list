@@ -33,7 +33,7 @@ public class TodoHandler {
         System.out.println("(2) Add New Task");
         System.out.println("(3) Edit Task (update, mark as done)");
         System.out.println("(4) Remove Task");
-        System.out.println("(5) Exit");
+        System.out.println("(5) Save And Quit");
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         pickOptionFromTopMenu();
 
@@ -45,20 +45,18 @@ public class TodoHandler {
                     break;
                 case 2:
                     addTask();
-                    fileHandler.writeListToFile(tasks, FILE_NAME);
                     pickOptionFromTopMenu();
                     break;
                 case 3:
                     updateTask();
-                    fileHandler.writeListToFile(tasks, FILE_NAME);
                     pickOptionFromTopMenu();
                     break;
                 case 4:
                     deleteTask();
-                    fileHandler.writeListToFile(tasks, FILE_NAME);
                     pickOptionFromTopMenu();
                     break;
                 case 5:
+                    fileHandler.writeListToFile(tasks, FILE_NAME);
                     breakFlag = true;
                     break;
             }
