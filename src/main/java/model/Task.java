@@ -1,24 +1,14 @@
 package model;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Task implements Serializable {
+public class Task extends BaseEntity {
 
-    private Integer id;
     private String title;
     private LocalDate createdDate;
     private LocalDate dueDate;
     private Status status;
     private String project;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getTitle() {
         return title;

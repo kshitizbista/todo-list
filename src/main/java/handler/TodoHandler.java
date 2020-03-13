@@ -2,9 +2,7 @@ package handler;
 
 import model.Status;
 import model.Task;
-import service.FileService;
-import service.IFile;
-import service.ITask;
+import service.MapService;
 import service.TaskService;
 
 import java.io.IOException;
@@ -25,24 +23,22 @@ public class TodoHandler {
     private static final String FILE_NAME = "todolist.txt";
     private boolean breakFlag = false;
     private int option;
-    private ITask todoService;
-    private IFile fileService;
+    private MapService<Task, Integer> mapService;
 
     public TodoHandler() {
-        todoService = new TaskService();
-        fileService = new FileService();
+        mapService = new TaskService();
     }
 
     public void start() {
         Set<Task> taskSet = null;
         try {
-            taskSet = fileService.readFile(FILE_NAME);
+            taskSet = FileHandler.readFile(FILE_NAME);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        taskSet.forEach(task -> todoService.addOrUpdate(task));
+        taskSet.forEach(task -> mapService.addOrUpdate(task));
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         System.out.println("Welcome to Todo List ");
         showStatus();
@@ -76,7 +72,7 @@ public class TodoHandler {
                     break;
                 case 5:
                     try {
-                        fileService.writeFile(todoService.findAll(), FILE_NAME);
+                        FileHandler.writeFile(mapService.findAll(), FILE_NAME);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -87,8 +83,8 @@ public class TodoHandler {
     }
 
     private void showList() {
-        if (todoService.count() > 0) {
-            List<Task> tasks = sortAndGetList(todoService.findAll());
+        if (mapService.count() > 0) {
+            List<Task> tasks = sortAndGetList(mapService.findAll());
             String format = "%-10s %-50s %-30s %-15s %-15s %-15s";
             System.out.println(String.format(format, "Task Id", "Task", "Project Name", "Status", "Created Date", "Due Date"));
             System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
@@ -116,14 +112,14 @@ public class TodoHandler {
         task.setCreatedDate(LocalDate.now());
         task.setDueDate(deuDate);
 
-        todoService.addOrUpdate(task);
+        mapService.addOrUpdate(task);
         System.out.println("'Task Added Successfully'");
     }
 
     private void updateTask() {
         System.out.println("Enter the task id you want to edit");
         int taskId = scanInt();
-        Task task = todoService.findById(taskId);
+        Task task = mapService.findById(taskId);
         if (task != null) {
             System.out.println("Enter the field you want to edit");
             System.out.println("1.Title");
@@ -149,7 +145,7 @@ public class TodoHandler {
                     task.setDueDate(getDeuDate());
                     break;
             }
-            todoService.addOrUpdate(task);
+            mapService.addOrUpdate(task);
             System.out.println("'Task Updated Successfully'");
         } else {
             System.out.println(">>ERROR: Cannot find task with id: " + taskId);
@@ -160,8 +156,8 @@ public class TodoHandler {
     private void deleteTask() {
         System.out.println("Enter the Task Id to remove:");
         int taskId = scanInt();
-        if (todoService.existsById(taskId)) {
-            todoService.deleteById(taskId);
+        if (mapService.existsById(taskId)) {
+            mapService.deleteById(taskId);
             System.out.println("'Task Deleted Successfully'");
         } else {
             System.out.println(">>ERROR: Cannot find task with id: " + taskId);
@@ -169,7 +165,7 @@ public class TodoHandler {
     }
 
     private String getProject() {
-        List<String> project = todoService.findAll().stream().map(task -> task.getProject()).distinct().collect(Collectors.toList());
+        List<String> project = mapService.findAll().stream().map(task -> task.getProject()).distinct().collect(Collectors.toList());
 
         System.out.println("Choose project from the list below or press enter to create new project");
         int index = 0;
@@ -244,15 +240,15 @@ public class TodoHandler {
     }
 
     private void showStatus() {
-        if (todoService.count() > 0) {
+        if (mapService.count() > 0) {
             int openStatus = getNumberOfSelectedStatus(Status.OPEN);
             int closedStatus = getNumberOfSelectedStatus(Status.DONE);
-            System.out.printf("Total task: %s, No. of Tasks To Do: %s , No. of Tasks Done: %s %n", openStatus, closedStatus, todoService.count());
+            System.out.printf("Total task: %s, No. of Tasks To Do: %s , No. of Tasks Done: %s %n", openStatus, closedStatus, mapService.count());
         }
     }
 
     private int getNumberOfSelectedStatus(Status status) {
-        return todoService.findAll().stream().filter(task -> task.getStatus() == status).collect(Collectors.toSet()).size();
+        return mapService.findAll().stream().filter(task -> task.getStatus() == status).collect(Collectors.toSet()).size();
     }
 
     private List<Task> sortAndGetList(Set<Task> list) {
