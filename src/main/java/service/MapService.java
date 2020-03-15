@@ -16,7 +16,7 @@ public interface MapService<T, ID> {
      * @return the saved object.
      * @throws RuntimeException if {@code object} is {@literal null}.
      */
-    T addOrUpdate(T object);
+    T save(T object);
 
     /**
      * Deletes the object with given id.
