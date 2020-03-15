@@ -26,7 +26,7 @@ public abstract class AbstractMapService<T extends BaseEntity, ID extends Intege
      * {@link AbstractMapService#getNextId()}.
      */
     @Override
-    public T addOrUpdate(T object) {
+    public T save(T object) {
         if (object != null) {
             if (object.getId() == null) {
                 object.setId(getNextId());

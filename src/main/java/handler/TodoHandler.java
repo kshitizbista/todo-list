@@ -39,7 +39,7 @@ public class TodoHandler {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        taskSet.forEach(task -> mapService.addOrUpdate(task));
+        taskSet.forEach(task -> mapService.save(task));
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
         System.out.println("Welcome to Todo List ");
         showStatus();
@@ -113,7 +113,7 @@ public class TodoHandler {
         task.setCreatedDate(LocalDate.now());
         task.setDueDate(deuDate);
 
-        mapService.addOrUpdate(task);
+        mapService.save(task);
         System.out.println("'Task Added Successfully'");
     }
 
@@ -133,11 +133,19 @@ public class TodoHandler {
                 field = scanInt();
             }
             switch (field) {
-                case 1:
-                    taskToEdit.setTitle(getTitle());
-                    mapService.addOrUpdate(taskToEdit);
+                case 1: {
+                    Task task = new Task(
+                            taskToEdit.getId(),
+                            getTitle(),
+                            taskToEdit.getProject(),
+                            taskToEdit.getCreatedDate(),
+                            taskToEdit.getDueDate(),
+                            taskToEdit.getStatus());
+                    mapService.save(task);
                     break;
-                case 2:
+                }
+
+                case 2: {
                     System.out.println("Note: Editing the project name will affect all the tasks under this project");
                     System.out.println("Enter Project Name:");
                     String projectName = scanString();
@@ -145,19 +153,42 @@ public class TodoHandler {
                     final String name = taskToEdit.getProject();
                     for (Task item : taskList) {
                         if (item.getProject().equals(name)) {
-                            item.setProject(projectName);
-                            mapService.addOrUpdate(item);
+                            Task task = new Task(
+                                    taskToEdit.getId(),
+                                    taskToEdit.getTitle(),
+                                    projectName,
+                                    taskToEdit.getCreatedDate(),
+                                    taskToEdit.getDueDate(),
+                                    taskToEdit.getStatus());
+                            mapService.save(task);
                         }
                     }
                     break;
-                case 3:
-                    taskToEdit.setStatus(getStatus());
-                    mapService.addOrUpdate(taskToEdit);
+                }
+
+                case 3: {
+                    Task task = new Task(
+                            taskToEdit.getId(),
+                            taskToEdit.getTitle(),
+                            taskToEdit.getProject(),
+                            taskToEdit.getCreatedDate(),
+                            taskToEdit.getDueDate(),
+                            getStatus());
+                    mapService.save(task);
                     break;
-                case 4:
-                    taskToEdit.setDueDate(getDeuDate());
-                    mapService.addOrUpdate(taskToEdit);
+                }
+
+                case 4: {
+                    Task task = new Task(
+                            taskToEdit.getId(),
+                            taskToEdit.getTitle(),
+                            taskToEdit.getProject(),
+                            taskToEdit.getCreatedDate(),
+                            getDeuDate(),
+                            taskToEdit.getStatus());
+                    mapService.save(task);
                     break;
+                }
             }
             System.out.println("'Task Updated Successfully'");
         } else {

@@ -30,6 +30,9 @@ public class FileHandler {
         if (file.length() != 0) {
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             set = (Set<T>) objectInputStream.readObject();
+            objectInputStream.close();
+        } else {
+            fileInputStream.close();
         }
         return set;
     }
@@ -47,6 +50,7 @@ public class FileHandler {
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(set);
+        objectOutputStream.close();
     }
 
     /**

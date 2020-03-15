@@ -17,4 +17,11 @@ public class BaseEntity implements Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
+
+    public BaseEntity() {
+    }
+
+    public BaseEntity(Integer id) {
+        this.id = id;
+    }
 }

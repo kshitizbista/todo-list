@@ -10,6 +10,18 @@ public class Task extends BaseEntity {
     private Status status;
     private String project;
 
+    public Task() {
+    }
+
+    public Task(Integer id, String title, String project, LocalDate createdDate, LocalDate dueDate, Status status) {
+        super(id);
+        this.title = title;
+        this.project = project;
+        this.createdDate = createdDate;
+        this.dueDate = dueDate;
+        this.status = status;
+    }
+
     public String getTitle() {
         return title;
     }

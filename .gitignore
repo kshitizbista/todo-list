@@ -1,3 +1,4 @@
 /.idea/
 /todo-list.iml
 /target/
+**.DS_Store
