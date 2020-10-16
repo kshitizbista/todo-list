@@ -3,9 +3,7 @@ package handler;
 import model.Status;
 import model.Task;
 import service.MapService;
-import service.TaskService;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -21,71 +19,15 @@ import java.util.stream.Collectors;
  */
 public class TodoHandler {
 
-    private static final String FILE_NAME = "todolist.txt";
-    private int option;
     private MapService<Task, Integer> mapService;
 
-    public TodoHandler() {
-        mapService = new TaskService();
+    public TodoHandler(MapService<Task, Integer> mapService) {
+        this.mapService = mapService;
     }
 
-    public void start() {
-        Set<Task> taskSet = null;
-        boolean exitLoop = false;
-        try {
-            taskSet = FileHandler.readFile(FILE_NAME);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        taskSet.forEach(task -> mapService.save(task));
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("Welcome to Todo List ");
-        showStatus();
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("(1) Show Task List (by date or project)");
-        System.out.println("(2) Add New Task");
-        System.out.println("(3) Edit Task (update, mark as done)");
-        System.out.println("(4) Remove Task");
-        System.out.println("(5) Save And Quit");
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
-        pickOptionFromTopMenu();
-
-        while (!exitLoop) {
-            switch (option) {
-                case 1:
-                    showList();
-                    showStatus();
-                    pickOptionFromTopMenu();
-                    break;
-                case 2:
-                    addTask();
-                    pickOptionFromTopMenu();
-                    break;
-                case 3:
-                    updateTask();
-                    pickOptionFromTopMenu();
-                    break;
-                case 4:
-                    deleteTask();
-                    pickOptionFromTopMenu();
-                    break;
-                case 5:
-                    try {
-                        FileHandler.writeFile(mapService.findAll(), FILE_NAME);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    exitLoop = true;
-                    break;
-            }
-        }
-    }
-
-    private void showList() {
+    public void showList(Scanner scanner) {
         if (mapService.count() > 0) {
-            List<Task> tasks = sortAndGetList(mapService.findAll());
+            List<Task> tasks = sortAndGetList(mapService.findAll(), scanner);
             String format = "%-10s %-50s %-30s %-15s %-15s %-15s";
             System.out.println(String.format(format, "Task Id", "Task", "Project Name", "Status", "Created Date", "Due Date"));
             System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
@@ -102,10 +44,10 @@ public class TodoHandler {
         }
     }
 
-    private void addTask() {
-        String project = getProject();
-        String title = getTitle();
-        LocalDate deuDate = getDeuDate();
+    public void addTask(Scanner scanner) {
+        String project = getProject(scanner);
+        String title = getTitle(scanner);
+        LocalDate deuDate = getDeuDate(scanner);
         Task task = new Task();
         task.setProject(project);
         task.setTitle(title);
@@ -117,9 +59,9 @@ public class TodoHandler {
         System.out.println("'Task Added Successfully'");
     }
 
-    private void updateTask() {
+    public void updateTask(Scanner scanner) {
         System.out.println("Enter the task id you want to edit");
-        int taskId = scanInt();
+        int taskId = scanInt(scanner);
         Task taskToEdit = mapService.findById(taskId);
         if (taskToEdit != null) {
             System.out.println("Enter the field you want to edit");
@@ -127,16 +69,16 @@ public class TodoHandler {
             System.out.println("2.Project");
             System.out.println("3.Status");
             System.out.println("4.Deu Date");
-            int field = scanInt();
+            int field = scanInt(scanner);
             while (!(field >= 1 && field <= 4)) {
                 System.out.println("Please Enter Correct Option:");
-                field = scanInt();
+                field = scanInt(scanner);
             }
             switch (field) {
                 case 1: {
                     Task task = new Task(
                             taskToEdit.getId(),
-                            getTitle(),
+                            getTitle(scanner),
                             taskToEdit.getProject(),
                             taskToEdit.getCreatedDate(),
                             taskToEdit.getDueDate(),
@@ -148,7 +90,7 @@ public class TodoHandler {
                 case 2: {
                     System.out.println("Note: Editing the project name will affect all the tasks under this project");
                     System.out.println("Enter Project Name:");
-                    String projectName = scanString();
+                    String projectName = scanString(scanner);
                     List<Task> taskList = mapService.findAll().stream().collect(Collectors.toList());
                     final String name = taskToEdit.getProject();
                     for (Task item : taskList) {
@@ -173,7 +115,7 @@ public class TodoHandler {
                             taskToEdit.getProject(),
                             taskToEdit.getCreatedDate(),
                             taskToEdit.getDueDate(),
-                            getStatus());
+                            getStatus(scanner));
                     mapService.save(task);
                     break;
                 }
@@ -184,7 +126,7 @@ public class TodoHandler {
                             taskToEdit.getTitle(),
                             taskToEdit.getProject(),
                             taskToEdit.getCreatedDate(),
-                            getDeuDate(),
+                            getDeuDate(scanner),
                             taskToEdit.getStatus());
                     mapService.save(task);
                     break;
@@ -197,9 +139,9 @@ public class TodoHandler {
 
     }
 
-    private void deleteTask() {
+    public void deleteTask(Scanner scanner) {
         System.out.println("Enter the Task Id to remove:");
-        int taskId = scanInt();
+        int taskId = scanInt(scanner);
         if (mapService.existsById(taskId)) {
             mapService.deleteById(taskId);
             System.out.println("'Task Deleted Successfully'");
@@ -208,45 +150,53 @@ public class TodoHandler {
         }
     }
 
-    private String getProject() {
+    public void showStatus() {
+        if (mapService.count() > 0) {
+            int open = countStatus(Status.OPEN);
+            int done = countStatus(Status.DONE);
+            System.out.printf("Total task: %s, No. of Tasks To Do: %s , No. of Tasks Done: %s %n", mapService.count(), open, done);
+        }
+    }
+
+    private String getProject(Scanner scanner) {
         List<String> project = mapService.findAll().stream().map(task -> task.getProject()).distinct().collect(Collectors.toList());
         String selectedProject = "";
         if (project.size() > 0) {
-            System.out.println("Choose name of project from existing list below or press enter to create new project");
+            System.out.println("To add task to existing project choose the id from the list below or press enter to create new project");
             int index = 0;
             for (String name : project) {
                 index = index + 1;
                 System.out.printf("%s. %s %n", index, name);
             }
-            selectedProject = scanString();
+            selectedProject = scanString(scanner);
         }
         String projectName;
         if (selectedProject.isEmpty()) {
             System.out.println("Enter Project Name:");
-            projectName = scanString();
+            projectName = scanString(scanner);
             // loop for re-entering input until project with new name is provided
             while (project.indexOf(projectName) != -1) {
                 System.out.printf("Project with name: '%s' already exist. Enter another name: %n", projectName);
-                projectName = scanString();
+                projectName = scanString(scanner);
             }
         } else if (Integer.parseInt(selectedProject) <= project.size()) {
             projectName = project.get(Integer.parseInt(selectedProject) - 1);
         } else {
             //recursive
             System.out.println(">>ERROR: Entered option doesn't exist !");
-            return getProject();
+            return getProject(scanner);
         }
         return projectName;
     }
 
-    private String getTitle() {
+    private String getTitle(Scanner scanner) {
         System.out.println("Enter Task Title:");
-        return scanString();
+        return scanString(scanner);
     }
 
-    private LocalDate getDeuDate() {
+    private LocalDate getDeuDate(Scanner scanner) {
         System.out.println("Enter Due Date(yyyy-MM-dd):");
-        String dateInput = scanString();
+        String dateInput = scanString(scanner);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate dueDate;
         try {
@@ -254,24 +204,24 @@ public class TodoHandler {
         } catch (DateTimeParseException ex) {
             System.out.println(">>ERROR: Date must be in yyyy-MM-dd format");
             // recursive
-            return getDeuDate();
+            return getDeuDate(scanner);
         }
         if (dueDate.compareTo(LocalDate.now()) < 0) {
             System.out.println(">>ERROR: The due date cannot be less than today's date");
             //recursive
-            return getDeuDate();
+            return getDeuDate(scanner);
         }
         return dueDate;
     }
 
-    private Status getStatus() {
+    private Status getStatus(Scanner scanner) {
         System.out.println("Choose Status:");
         System.out.println("1." + Status.OPEN);
         System.out.println("2." + Status.DONE);
-        int statusInput = scanInt();
+        int statusInput = scanInt(scanner);
         while (!(statusInput == 1 || statusInput == 2)) {
             System.out.println("Please Enter Correct Option:");
-            statusInput = scanInt();
+            statusInput = scanInt(scanner);
         }
         Status status = null;
         if (statusInput == 1) {
@@ -283,38 +233,21 @@ public class TodoHandler {
         return status;
     }
 
-    private void pickOptionFromTopMenu() {
-        System.out.println("Pick An Option From The Menu At Top:");
-        option = scanInt();
-        while (!(option >= 1 && option <= 5)) {
-            System.out.println("Please Enter Correct Option:");
-            option = scanInt();
-        }
-    }
-
-    private void showStatus() {
-        if (mapService.count() > 0) {
-            int open = countStatus(Status.OPEN);
-            int done = countStatus(Status.DONE);
-            System.out.printf("Total task: %s, No. of Tasks To Do: %s , No. of Tasks Done: %s %n", mapService.count(), open, done);
-        }
-    }
-
     private int countStatus(Status status) {
         return mapService.findAll().stream().filter(task -> task.getStatus() == status).collect(Collectors.toSet()).size();
     }
 
-    private List<Task> sortAndGetList(Set<Task> list) {
+    private List<Task> sortAndGetList(Set<Task> list, Scanner scanner) {
         System.out.println("Enter your choice for sorting:");
         System.out.println("1.Sort by Project");
         System.out.println("2.Sort by DeuDate");
 
         List<Task> tasks = new ArrayList<>(list);
 
-        int sortOption = scanInt();
+        int sortOption = scanInt(scanner);
         while (!(sortOption == 1 || sortOption == 2)) {
             System.out.println("Please Enter Correct Option:");
-            sortOption = scanInt();
+            sortOption = scanInt(scanner);
         }
 
         if (sortOption == 1) {
@@ -326,18 +259,20 @@ public class TodoHandler {
         return tasks;
     }
 
-    private int scanInt() {
-        Scanner sc = new Scanner(System.in);
+    private int scanInt(Scanner sc) {
         while (!sc.hasNextInt()) {
             sc.nextLine();
             System.out.println("Please enter integer only. Try again: ");
         }
         int result = sc.nextInt();
+
+        // nextInt only reads the integer and cursor after reading mains just after it. To consuming the leftover new line
+        // use the nextLine()
+        sc.nextLine();
         return result;
     }
 
-    private String scanString() {
-        Scanner sc = new Scanner(System.in);
+    private String scanString(Scanner sc) {
         return sc.nextLine().trim();
     }
 }
