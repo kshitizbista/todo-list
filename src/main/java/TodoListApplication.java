@@ -81,6 +81,7 @@ public class TodoListApplication {
                     break;
             }
         }
+        scanner.close();
     }
 
     public static void main(String[] args) {
