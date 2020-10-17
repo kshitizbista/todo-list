@@ -20,15 +20,13 @@ public class FileHandler {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    @SuppressWarnings("unchecked")
     public static <T> Set<T> readFile(String path) throws IOException, ClassNotFoundException {
-        FileInputStream fileInputStream;
         Set<T> set = new HashSet<>();
         File file = getFile(path);
-        fileInputStream = new FileInputStream(file);
+        FileInputStream fileInputStream = new FileInputStream(file);
 
         if (file.length() != 0) {
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(fileInputStream));
             set = (Set<T>) objectInputStream.readObject();
             objectInputStream.close();
         } else {
@@ -48,7 +46,7 @@ public class FileHandler {
     public static <T> void writeFile(Set<T> set, String path) throws IOException {
         File file = getFile(path);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(fileOutputStream));
         objectOutputStream.writeObject(set);
         objectOutputStream.close();
     }
