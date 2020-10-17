@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class Task extends BaseEntity {
 
@@ -60,5 +61,25 @@ public class Task extends BaseEntity {
 
     public void setProject(String project) {
         this.project = project;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Task obj = (Task) o;
+        return (Objects.equals(this.getId(), obj.getId()) &&
+                Objects.equals(this.title, obj.title) &&
+                Objects.equals(this.project, obj.project) &&
+                Objects.equals(this.createdDate, obj.createdDate) &&
+                Objects.equals(this.dueDate, obj.dueDate) &&
+                Objects.equals(this.status, obj.status));
     }
 }
