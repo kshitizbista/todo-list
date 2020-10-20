@@ -8,7 +8,15 @@ import java.io.Serializable;
  * @author Kshitiz Bista
  */
 public class BaseEntity implements Serializable {
+
     private Integer id;
+
+    public BaseEntity() {
+    }
+
+    public BaseEntity(Integer id) {
+        this.id = id;
+    }
 
     public Integer getId() {
         return id;
@@ -18,10 +26,4 @@ public class BaseEntity implements Serializable {
         this.id = id;
     }
 
-    public BaseEntity() {
-    }
-
-    public BaseEntity(Integer id) {
-        this.id = id;
-    }
 }
